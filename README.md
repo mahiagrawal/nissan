@@ -12,7 +12,7 @@ with flask, flask_mqtt, sqlite3 packages installed
 4. navigate to the URL displayed.
 
 # Implementation
-#### run time
+### run time
 **home**
 ![home](/home.png)
 
