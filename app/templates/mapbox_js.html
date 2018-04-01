@@ -1,0 +1,39 @@
+<html>
+<head>
+<meta charset=utf-8 />
+<meta http-equiv="refresh" content="3">
+<title>A tracking map</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<div id='map'></div>
+<script>
+L.mapbox.accessToken = 'pk.eyJ1IjoibWFnYXJ3YWwiLCJhIjoiY2pmZTBjMGxsMTdvbDJxbWlyYjl6aTQ4dyJ9.417piQHNVL6KQO_zht6RuA';
+var geojson = [];
+var i;
+var l = {{topics|tojson}};
+var pt = {{points|tojson}};
+
+for(i=0; i<l.length;i++){
+  var p = {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [pt[2*(i)]+i, pt[2*(i)+1]+i]
+    }
+  };
+  geojson.push(p);
+}
+
+var map = L.mapbox.map('map', 'mapbox.streets')
+    .setView([40, -74.50], 6);
+var myLayer = L.mapbox.featureLayer().setGeoJSON(geojson).addTo(map);
+</script>
+</body>
+</html>

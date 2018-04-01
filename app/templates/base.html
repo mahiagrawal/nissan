@@ -1,0 +1,40 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - App</title>
+      {% else %}
+      <title>Welcome to App</title>
+      {% endif %}
+    </head>
+    <style>
+  body { 
+    background-image: url("https://www.nissanusa.com/dam/nissan/homepage-responsive/promo-carousel/2018-nissan-kicks-promo-large.jpg");
+
+    /* Full height */
+    height: 100%; 
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+  </style>
+    <body>
+        <div>
+        App: 
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        </div>
+        <hr>
+         {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+</html>

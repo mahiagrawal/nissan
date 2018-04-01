@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hi, {{ user.username }}!</h1>
+    This is a ticker for showing live status of all cars.
+    <marquee behavior="scroll" direction="up" style="height:200px truespeed = 40 scrolldelay=1000;">
+    {% for post in posts %}
+    <div><p><b>{{ post.car.model }}</b> is: {{ post.Status }}</p></div>
+    {% endfor %}
+    </marquee>
+{% endblock %}
