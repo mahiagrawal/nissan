@@ -1,9 +1,9 @@
 # nissan
-A basic application to track your(and your friends') phone(read:cars).
+A basic application to track your [and your friends'] phones (read:cars).
 
 # environment
 python 2.7
-with flask, flask_mqtt, sqlite3, packages installed
+with flask, flask_mqtt, sqlite3 packages installed
 
 # to run
 1. Navigate to the "nissan" directory where app.py is situated from your terminal.
