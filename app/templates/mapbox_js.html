@@ -1,11 +1,12 @@
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset=utf-8 />
-<meta http-equiv="refresh" content="3">
 <title>A tracking map</title>
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
 <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <style>
   body { margin:0; padding:0; }
   #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -13,27 +14,38 @@
 </head>
 <body>
 <div id='map'></div>
-<script>
+<script type="text/javascript" charset="utf-8">
 L.mapbox.accessToken = 'pk.eyJ1IjoibWFnYXJ3YWwiLCJhIjoiY2pmZTBjMGxsMTdvbDJxbWlyYjl6aTQ4dyJ9.417piQHNVL6KQO_zht6RuA';
-var geojson = [];
-var i;
-var l = {{topics|tojson}};
-var pt = {{points|tojson}};
+var map = L.mapbox.map('map', 'mapbox.streets').setView([40, -74.50], 6);
 
-for(i=0; i<l.length;i++){
-  var p = {
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [pt[2*(i)]+i, pt[2*(i)+1]+i]
+  $(document).ready(function() {
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    socket.on('connect', function() {
+                socket.emit('subscribe', data='{{topic}}');
+            });
+    socket.on('mqtt_message', function(data) {
+      console.log(data);
+      relocate(data);
+    });
+
+    function relocate(points){
+      var geojson = [];
+      var pt = points;
+
+      for(i=0; i<pt.length;i++){
+        var p = {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [pt[i][0]+i, pt[i][1]+i]
+          }
+        } 
+        geojson.push(p);
+      }
+
+      var myLayer = L.mapbox.featureLayer().setGeoJSON(geojson).addTo(map);
     }
-  };
-  geojson.push(p);
-}
-
-var map = L.mapbox.map('map', 'mapbox.streets')
-    .setView([40, -74.50], 6);
-var myLayer = L.mapbox.featureLayer().setGeoJSON(geojson).addTo(map);
+  });
 </script>
 </body>
 </html>
