@@ -15,7 +15,6 @@ with flask, flask_mqtt, sqlite3 packages installed
 #### run time
 **home**
 ![home](/home.png)
-Format: ![home page](url)
 
 **login**                  |  **wrong login**
 :-------------------------:|:-------------------------:
