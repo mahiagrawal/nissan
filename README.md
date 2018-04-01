@@ -24,4 +24,8 @@ with flask, flask_mqtt, sqlite3 packages installed
 :-------------------------:|:-------------------------:
 ![car](/mahim.png)         |  ![admin](/admin.png)
 
-#### back end
+### back end
+ A mobile app (Owntracks) send the location data to a private MQTT broker (on cloud). The connection is established when we are logged in to the application and the MQTT isntance, then, subscribe to the topic of the corresponding user (or all topics if we are logged in as admin). The mqtt keeps running in the background waiting for any published message to the topic it has subscribed. Anytime a message is published to the topic, it extracts out the location attribute from the message and updates the marker coordinates variable on the map.
+ The map is refreshed every 3 seconds, automatically, to update the display according to the new coordinates.
+ 
+ Login authorisation is maintained in the "users" table in "database.db". This table also has topic names that each user publishes the message to, on MQTT broker.
