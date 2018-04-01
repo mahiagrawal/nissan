@@ -1,13 +1,20 @@
 #! /usr/bin/python
 
 from app import app
-from flask import render_template, redirect, url_for, request, Flask
+from flask import render_template, redirect, url_for, Flask, request
 from flask_mqtt import Mqtt
 import ast 
 import sqlquery
+from flask_socketio import SocketIO
+import eventlet
+
+eventlet.monkey_patch()
 
 topic = ''
 coordinates = {}
+
+mqtt = Mqtt(app)
+socketio = SocketIO(app)
 
 @app.route('/')
 @app.route('/index')
@@ -32,42 +39,44 @@ def index():
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     error = None
+    global topic
     if request.method == 'POST':
     	user = request.form['username']
     	passw = request.form['password']
 
     	count = sqlquery.check_credentials(user, passw)[0][0]
     	if(count!=0):
-    		global topic
         	topic = sqlquery.get_topic(user,passw)[0][0]
         else:
             error = 'Invalid Credentials. Please try again.'
     if(topic != ''):
-		return redirect(url_for('mapbox'))
+        return redirect(url_for('mapbox'))
     else:	
     	return render_template('login.html', error=error)
 
 @app.route('/mapbox')
 def mapbox():
-	mqtt  = Mqtt(app)
-	@mqtt.on_connect()
-	def handle_connect(client, userdata, flags, rc):
-		if(topic=='all'):
-			mqtt.subscribe('owntracks/nwgmhdaf/#')
-		else:
-			mqtt.subscribe(topic)
-	@mqtt.on_message()
-	def handle_mqtt_message(client, userdata, message):
-		data = dict(
-			topic=message.topic.encode('ascii', 'ignore'),
-			payload=message.payload.encode('ascii', 'ignore')
-		)
-		d = ast.literal_eval(data['payload'])
-		global coordinates
-		coordinates[data['topic']] = [d['lon'], d['lat']]
-	return redirect(url_for('mapmake')) 
+    global topic
+    return render_template('mapbox_js.html', topic = topic)
 
-@app.route('/mapmake')
-def mapmake():
-	points = [j for v in coordinates.values() for j in v]
-	return render_template('mapbox_js.html', points=points, topics=coordinates.keys())
+@socketio.on('subscribe')
+def handle_subscribe(message):
+    if(message=='all'):
+        mqtt.subscribe('owntracks/nwgmhdaf/#')
+    else:
+        mqtt.subscribe(message)
+
+@mqtt.on_message()
+def handle_mqtt_message(client, userdata, message):
+    data = dict(
+        topic=message.topic.encode('ascii', 'ignore'),
+        payload=message.payload.encode('ascii', 'ignore')
+    )
+    d = ast.literal_eval(data['payload'])
+    global coordinates
+    coordinates[data['topic']] = [d['lon'], d['lat']]
+    points = coordinates.values()
+    socketio.emit('mqtt_message', data=points)
+
+if __name__ == '__main__':
+    socketio.run(app, host='127.0.0.1', port=5000, use_reloader=True, debug=True)
